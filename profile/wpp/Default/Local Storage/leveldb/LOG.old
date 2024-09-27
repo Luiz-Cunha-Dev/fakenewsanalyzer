@@ -1,3 +1,6 @@
-2022/06/03-19:40:19.051 ec20 Reusing MANIFEST C:\Users\alvaro.d\source\TCC\FakeAnalyzer\profile\wpp\Default\Local Storage\leveldb/MANIFEST-000001
-2022/06/03-19:40:19.057 ec20 Recovering log #19
-2022/06/03-19:40:19.060 ec20 Reusing old log C:\Users\alvaro.d\source\TCC\FakeAnalyzer\profile\wpp\Default\Local Storage\leveldb/000019.log 
+2024/09/27-19:30:14.887 46ac Reusing MANIFEST D:\Projects\fakenewsanalyzer\profile\wpp\Default\Local Storage\leveldb/MANIFEST-000001
+2024/09/27-19:30:14.895 46ac Recovering log #25
+2024/09/27-19:30:14.899 46ac Reusing old log D:\Projects\fakenewsanalyzer\profile\wpp\Default\Local Storage\leveldb/000025.log 
+2024/09/27-19:32:15.639 3d7c Level-0 table #29: started
+2024/09/27-19:32:15.667 3d7c Level-0 table #29: 15313 bytes OK
+2024/09/27-19:32:15.698 3d7c Delete type=0 #25

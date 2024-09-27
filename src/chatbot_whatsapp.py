@@ -17,18 +17,18 @@ from chatbot_base import ChatBotBase
 class WhatsappBot(ChatBotBase):
     #Setamos o caminho de nossa aplicação.
     dir_path = os.getcwd()
-    cssName_ContactWithNewMessage = '_3C4Vf'
+    cssSelector_ContactWithNewMessage = '#pane-side span[aria-label*="não lida"]'
 
-    cssName_textfield = 'p3_M1' #_13NKt #_1un-p
-    cssName_button = '_1Ae7k'
+    cssSelector_textfield = 'div[aria-placeholder="Digite uma mensagem"] p'
+    cssSelector_button = 'button[aria-label="Enviar"]'
 
     cssName_messagesFromContact = 'message-in'
-    cssName_forwardedMessage = 'g3ewzqzm'
+    cssSelector_forwardedMessage = 'span[data-icon*="forwarded"]'
     className_confirmButton = '_2Zdgs'
 
-    cssName_ForwardedImage = 'g3ewzqzm'
-    cssName_ForwardedAudio = '_2G-e-'
-    cssName_ForwardedVideo = '_1C80R'
+    cssSelector_ForwardedImage = 'img'
+    cssName_ForwardedAudio = 'audio'
+    cssName_ForwardedVideo = 'video'
 
     def __init__(self):
         super().__init__()
@@ -53,7 +53,8 @@ class WhatsappBot(ChatBotBase):
         
     def verificarContatoMensagemNova(self):
         #Este pega o elemento div informando o contato que contem mensagens não lidas
-        contatosComMensagem = self.driver.find_elements(By.CLASS_NAME, self.cssName_ContactWithNewMessage)
+        contatosComMensagem = self.driver.find_elements(By.CSS_SELECTOR, self.cssSelector_ContactWithNewMessage)
+
         if len(contatosComMensagem) > 0:
             self.contatoComMensagem = contatosComMensagem[0]
             return self.contatoComMensagem
@@ -63,7 +64,7 @@ class WhatsappBot(ChatBotBase):
     def localizarContato(self, nome_contato):
         print('Encontrando o contato pra clicar')
         #Selecionamos o elemento da caixa de pesquisa do whats pela classe.
-        caixa_de_pesquisas = self.driver.find_elements(By.CLASS_NAME, self.cssName_textfield)
+        caixa_de_pesquisas = self.driver.find_elements(By.CSS_SELECTOR, self.cssSelector_textfield)
         self.caixa_de_pesquisa =  caixa_de_pesquisas[0]
         #Escreveremos o nome do contato na caixa de pesquisa e aguardaremos 2 segundos.
         self.caixa_de_pesquisa.send_keys(nome_contato)
@@ -74,7 +75,7 @@ class WhatsappBot(ChatBotBase):
 
     def abreConversaContato(self, nome_contato):
         #Selecionamos o elemento da caixa de pesquisa do whats pela classe.
-        caixa_de_pesquisas = self.driver.find_elements(By.CLASS_NAME, self.cssName_textfield)
+        caixa_de_pesquisas = self.driver.find_elements(By.CSS_SELECTOR, self.cssSelector_textfield)
         self.caixa_de_pesquisa =  caixa_de_pesquisas[0]
         #Escreveremos o nome do contato na caixa de pesquisa e aguardaremos 2 segundos.
         self.caixa_de_pesquisa.send_keys(nome_contato)
@@ -86,13 +87,13 @@ class WhatsappBot(ChatBotBase):
 
     #Ao usar este método enviamos uma mensagem ao contato que está sendo visualizado
     def enviarMensagem(self, frase):
-        chat_boxes = self.driver.find_elements(By.CLASS_NAME, self.cssName_textfield)
+        chat_boxes = self.driver.find_elements(By.CSS_SELECTOR, self.cssSelector_textfield)
         self.caixa_de_mensagem = chat_boxes[0]
         #Escrevemos a frase na caixa de mensagem
         self.caixa_de_mensagem.send_keys(frase)
         time.sleep(1)
         #Setamos o botão de enviar e clicamos para enviar
-        self.botao_enviar = self.driver.find_elements(By.CLASS_NAME, self.cssName_button)
+        self.botao_enviar = self.driver.find_elements(By.CSS_SELECTOR, self.cssSelector_button)
         #comentar a linha seguinte para que nao converse com o usuario
         self.botao_enviar[0].click()
         time.sleep(1)
@@ -114,6 +115,8 @@ class WhatsappBot(ChatBotBase):
         print('Analisando mensagens do contato')
         #Vamos obter todas as mensagens
         post = self.driver.find_elements(By.CLASS_NAME, self.cssName_messagesFromContact)
+
+        print('post', len(post))
         #Mas vamos considerar apenas as 6 últimas conversas para analise
         contador = 0
         quantidadeMensagens = len(post)
@@ -121,7 +124,7 @@ class WhatsappBot(ChatBotBase):
             print('Analisando as ultimas 6 mensagens do contato')
             ultimo = len(post) - 1 - contador
             #vamos verificar se foi uma mensagem encaminhada
-            if len(post[ultimo].find_elements(By.CLASS_NAME, self.cssName_forwardedMessage)) > 0:
+            if len(post[ultimo].find_elements(By.CSS_SELECTOR, self.cssSelector_forwardedMessage)) > 0:
                 print('Analisando mensagem encaminhada do contato')
                 dadoVerificar = ''
                 #verifica se eh texto
@@ -140,8 +143,9 @@ class WhatsappBot(ChatBotBase):
                     md5 = hashlib.md5(texto.encode()).hexdigest()
                     dadoVerificar = (tipoMensagem, texto, md5)
                 #verifica se eh uma imagem
-                elif len(post[ultimo].find_elements(By.CLASS_NAME, self.cssName_ForwardedImage)) > 0:
+                elif len(post[ultimo].find_elements(By.CSS_SELECTOR, self.cssSelector_ForwardedImage)) > 0:
                     print('Encontrei uma imagem a verificar')
+
                     elemento = post[ultimo].find_element(By.TAG_NAME, 'img')
                     origem = elemento.get_attribute("src").strip()
 
@@ -188,34 +192,34 @@ class WhatsappBot(ChatBotBase):
             contador = contador + 1
         return  (0, '2', 'Nenhuma mensagem me foi encaminhada. Pode me encaminhar a mensagem que deseja que eu analise?')
 
-    #Nosso método responde irá receber o parâmetro conteudo que seria o retorno do método escuta.
+    # Nosso método responde irá receber o parâmetro conteudo que seria o retorno do método escuta.
     def responde(self, conteudo):
         if conteudo[0] == 0:
             response = conteudo[2]
         else:
-            #Setamos a reposta do bot na variável response.
+            # Setamos a reposta do bot na variável response.
             dadosVerificacao = self.verificarMensagem(conteudo[0], conteudo[1], conteudo[2])
             if dadosVerificacao[0] == False:
-                #Nao ha mensagem semelhante na base de dados
+                # Nao ha mensagem semelhante na base de dados
                 response = "Ainda não temos dados sobre essa mensagem em nossa base de dados. Mas isso não significa que seja verdade, leia atentamente e confronte com seu conhecimento, antes de encaminhar a outras pessoas."
                 self.enviarMensagem(response)
-                #se for uma mensagem a ser analisada, contacta o grupo 'Detetives de fake news'
-                #print('Informando detetives')
-                #contatoAProcessar =  self.localizarContato('Detetives de fake news')
-                #contatoAProcessar.click()
-                #self.enviarMensagem('Nova mensagem a verificar: ')
+                # se for uma mensagem a ser analisada, contacta o grupo 'Detetives de fake news'
+                # print('Informando detetives')
+                # contatoAProcessar =  self.localizarContato('Detetives de fake news')
+                # contatoAProcessar.click()
+                # self.enviarMensagem('Nova mensagem a verificar: ')
             else:
                 print('Encontramos algo a respeito dessa mensagem em nossa base de dados')
-        
+    
                 if dadosVerificacao[1] == False:
-                    #mensagem ainda nao foi verificada pelos analistas
+                    # mensagem ainda nao foi verificada pelos analistas
                     response = 'Esta mensagem ainda nao foi verificada por nossos analistas, logo não podemos afirmar que ela é fake ou verdadeira'
                 elif dadosVerificacao[2] == True:
-                    #mensagem foi verificada e eh fake
-                    response = "FAKE. Esta mensagem é Fake. Para saber mais sobre, leia: " + dadosVerificacao[3]
-                else: 
-                    #mensagem foi verificada e nao eh fake
-                    response = "A partir de nossas análises, esta mensagem não é fake news. Para saber mais sobre, leia: " + dadosVerificacao[3]
+                    # mensagem foi verificada e eh fake
+                    response = "FAKE. Esta mensagem é Fake. Para saber mais sobre, leia: " + dadosVerificacao[3].decode('utf-8')
+                else:
+                    # mensagem foi verificada e nao eh fake
+                    response = "A partir de nossas análises, esta mensagem não é fake news. Para saber mais sobre, leia: " + dadosVerificacao[3].decode('utf-8')
                 self.enviarMensagem(response)
 
     def limparConversa(self, contato):
@@ -248,7 +252,7 @@ while repetir:
         bot.enviarMensagem('Aguarde um instante que irei verificar sua mensagem')
         #Usamos o método de escuta que irá setar na variável texto.
         conteudo = bot.escuta()
-        #emite uma resposta da analise do texto
+        # #emite uma resposta da analise do texto
         bot.responde(conteudo)
         #limpa a conversa com o contato
         #bot.limparConversa(contatoAProcessar)
